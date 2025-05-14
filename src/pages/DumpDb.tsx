@@ -60,6 +60,9 @@ export default function DumpDb() {
           </div>
         )}
       </div>
+      <footer className="opacity-70 text-xs py-4 w-full text-center mt-auto">
+        &copy; {new Date().getFullYear()} Call Center Group 4
+      </footer>
     </div>
   );
 }

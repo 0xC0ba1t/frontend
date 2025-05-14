@@ -93,7 +93,7 @@ export default function Home({ answers, userId }: HomeProps) {
         </div>
       </main>
       <footer className="opacity-70 text-xs py-4 w-full text-center mt-auto">
-        &copy; {new Date().getFullYear()} Book Recommender — Minimal, dark, Material-inspired UI
+        &copy; {new Date().getFullYear()} Call Center Group 4
       </footer>
     </div>
   );
