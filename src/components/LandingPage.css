@@ -1,0 +1,162 @@
+/* Overlay for smooth gradient fade after book open, before color blast */
+.landing-bg-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(.62,.22,.54,1.2);
+}
+.landing-bg-fade--show {
+  opacity: 1;
+}
+
+.landing-logo-header {
+  position: fixed;
+  left: 50%;
+  z-index: 40;
+  font-family: 'Special Elite', 'IBM Plex Mono', Consolas, Courier, monospace;
+  font-weight: 700;
+  font-size: clamp(2.1rem, 7vw, 4.5rem);
+  line-height: 1.06;
+  letter-spacing: 0.018em;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.13);
+  top: 50%;
+  max-width: 95vw;
+  white-space: pre-line;
+  transition: top 0.86s cubic-bezier(.64,.08,0,1), font-size .62s, transform .72s, color .62s;
+}
+.landing-logo-header.is-top {
+  top: clamp(10px, 5vw, 40px);
+  transform: translate(-50%, 0) scale(0.95);
+}
+@media (max-width: 640px) {
+  .landing-logo-header {
+    font-size: clamp(1.2rem, 8vw, 2.5rem);
+    top: 50%;
+  }
+  .landing-logo-header.is-top {
+    top: 6px;
+    font-size: clamp(1.25rem, 8vw, 2.7rem);
+    transform: translate(-50%, 0) scale(0.91);
+  }
+}
+@media (orientation: landscape) and (max-width: 800px) {
+  .landing-logo-header {
+    top: 50%;
+    font-size: clamp(1rem,8.5vw,2.1rem);
+  }
+  .landing-logo-header.is-top {
+    top: 2px;
+    transform: translate(-50%, 0) scale(0.83);
+  }
+}
+
+.landing-logo-header-text {
+  white-space: nowrap;
+  text-align: center;
+  display: block;
+  width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* On small/narrow screens, allow wrapping IF too narrow for single line */
+@media (max-width: 420px), (max-width: 600px) and (orientation: portrait) {
+  .landing-logo-header-text {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.11;
+    font-size: clamp(1.1rem, 12vw, 2rem);
+  }
+}
+
+.landing-logo-header-break {
+  display: inline;
+}
+@media (max-width: 640px), (max-width: 900px) and (orientation: portrait) {
+  .landing-logo-header-break {
+    display: block;
+    height: 0.13em;
+    width: 100%;
+    content: " ";
+  }
+}
+
+.landing-main-bg {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure flex child grows/scrolls for tall content */
+.landing-main-bg > .flex-1 { min-height: 0; max-height: 100vh; }
+
+/* Yes/No Question Responsive Styles */
+.qcard-yesno-label {
+  font-size: clamp(1.25rem, 3.5vw, 2.2rem);
+  word-break: break-word;
+  margin-bottom: 1.4rem;
+}
+.qcard-yesno-row {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.7rem;
+}
+@media (max-width: 600px) {
+  .qcard-yesno-row {
+    flex-direction: column;
+    margin-bottom: 1.2rem;
+    gap: 0.55rem;
+  }
+}
+.qcard-yesno-pill {
+  background: rgba(0,0,0,0.55);
+  border: 1.4px solid #e1e1e116;
+  color: #fffbee;
+  font-size: 1.07rem;
+  border-radius: 999px;
+  padding: 0.9em 2.1em;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.18s, border 0.22s, transform 0.18s;
+  outline: none;
+  box-shadow: 0 5px 24px #0a011820;
+  margin: 0 0.1em;
+  min-width: 110px;
+  text-align: center;
+  user-select: none;
+}
+.qcard-yesno-pill--active {
+  background: linear-gradient(92deg, #faffb2 5%, #8cf6ff 46%, #daffe6 98%);
+  color: #001b19;
+  border-color: #cefaff55;
+  transform: scale(1.08);
+  box-shadow: 0 2px 18px #81ffd940,0 1.5px 9px #9ef4d128;
+}
+
+/* Authors multi-select scrollable box */
+.authors-scroll-y {
+  max-height: 260px;
+  overflow-y: auto;
+  align-content: flex-start;
+  justify-content: flex-start;
+  /* Optionally, add a subtle border or background for clarity */
+  /* background: rgba(0,0,0,0.18); */
+  /* border: 1px solid rgba(255,255,255,0.08); */
+  padding-right: 2px;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 650px) {
+  .authors-scroll-y {
+    max-height: 135px;
+    min-height: 44px;
+  }
+}

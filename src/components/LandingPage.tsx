@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
+import './LandingPage.css'; // NEW: will create this file for bg fade effect
 
 function randomColor() {
   const h = Math.floor(Math.random() * 360);
@@ -32,20 +33,8 @@ function randomBWGradient(steps = 2) {
   return `linear-gradient(${angle}deg, ${stops.join(", ")})`;
 }
 
-// --- Genres/authors: stub; would fetch from API in real app
 const GENRES = [
   "Fantasy", "Science Fiction", "Romance", "Mystery", "Nonfiction", "Horror", "Classic", "Dystopian"
-];
-const AUTHORS = [
-  "J.K. Rowling", "J.R.R. Tolkien", "George Orwell", "Harper Lee", "F. Scott Fitzgerald", "Jane Austen", "Isaac Asimov"
-];
-
-const questions = [
-  { key: "name", label: "What is your name?", type: "input" },
-  { key: "genres", label: "What genres do you like?", type: "multi", options: GENRES },
-  { key: "budget", label: "What is your budget?", type: "input", inputType: "number", prefix: "$" },
-  { key: "age", label: "What is your age?", type: "input", inputType: "number" },
-  { key: "authors", label: "Do you have preferences towards certain authors?", type: "multi", options: AUTHORS, last: true },
 ];
 
 function QuestionCard({
@@ -57,11 +46,75 @@ function QuestionCard({
   gradient,
   isLast,
   canFinish,
-  onFinish
+  onFinish,
+  answers,
+  handleFinishFromNo,
+  options = [],
+}: {
+  q: any,
+  value: any,
+  onChange: (val: any) => void,
+  onNext: () => void,
+  autoFocus?: boolean,
+  gradient: string,
+  isLast?: boolean,
+  canFinish?: boolean,
+  onFinish?: () => void,
+  answers?: any,
+  handleFinishFromNo?: () => void,
+  options?: string[],
 }) {
+  if (q.type === 'yesno') {
+    const [localValue, setLocalValue] = React.useState(value);
+    React.useEffect(() => { setLocalValue(value); }, [value]);
+    const userNo = localValue === false;
+    function finishWithSave() {
+      onChange(false);
+      setTimeout(() => { handleFinishFromNo && handleFinishFromNo(); }, 30);
+    }
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-full px-4 sm:px-0 min-h-[60vh] overflow-y-auto w-full flex-1" style={{ maxWidth: 430, fontFamily: 'Special Elite, IBM Plex Mono, Courier, monospace' }}>
+        <div className="qcard-yesno-label w-full text-2xl sm:text-3xl md:text-4xl text-center mb-8 font-bold select-none leading-tight" style={{ background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          {q.label}
+        </div>
+        <div className="flex flex-col xs:flex-row gap-4 w-full items-center justify-center qcard-yesno-row">
+          <button
+            type="button"
+            tabIndex={0}
+            className={`qcard-yesno-pill${localValue === true ? ' qcard-yesno-pill--active' : ''}`}
+            onClick={() => { setLocalValue(true); onChange(true); }}
+            aria-pressed={localValue === true}
+            autoFocus={localValue === null || localValue === undefined}
+          >Yes</button>
+          <button
+            type="button"
+            tabIndex={0}
+            className={`qcard-yesno-pill${userNo ? ' qcard-yesno-pill--active' : ''}`}
+            onClick={() => { setLocalValue(false); onChange(false); }}
+            aria-pressed={userNo}
+            autoFocus={localValue === false}
+          >No</button>
+        </div>
+        {localValue === true && (
+          <button
+            className="mt-10 px-8 py-3 rounded-2xl bg-gradient-to-br from-teal-400 via-cyan-500 to-indigo-400 text-black font-mono font-bold text-xl tracking-wide shadow-xl disabled:opacity-30 transition-all"
+            onClick={onNext}
+            disabled={typeof localValue !== 'boolean'}
+          >Next</button>
+        )}
+        {userNo && (
+          <button
+            className="mt-10 px-8 py-3 rounded-2xl bg-gradient-to-br from-lime-400 via-teal-400 to-blue-500 text-black font-mono font-bold text-xl tracking-wide shadow-2xl disabled:opacity-30 transition-all"
+            onClick={finishWithSave}
+          >FINISH</button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
-      className="flex flex-col justify-center items-center w-full h-full mx-auto px-4 sm:px-0 min-h-[70vh]"
+      className="flex flex-col justify-center items-center w-full h-full mx-auto px-4 sm:px-0 min-h-[70vh] overflow-y-auto w-full flex-1"
       style={{ fontFamily: 'Special Elite, IBM Plex Mono, Courier, monospace', maxWidth: 440 }}>
       <div
         className="w-full text-4xl md:text-5xl text-center mb-8 font-bold select-none leading-tight"
@@ -86,8 +139,8 @@ function QuestionCard({
         />
       )}
       {q.type === "multi" && (
-        <div className="flex flex-wrap gap-3 mb-8 justify-center w-full">
-          {q.options.map(opt => (
+        <div className={`flex flex-wrap gap-3 mb-8 justify-center w-full ${q.key === 'authors' ? 'authors-scroll-y' : ''}`}>
+          {(options || []).map(opt => (
             <button
               key={opt}
               className={
@@ -98,7 +151,7 @@ function QuestionCard({
               }
               onClick={() =>
                 value?.includes(opt)
-                  ? onChange(value.filter((a) => a !== opt))
+                  ? onChange(value.filter((a: string) => a !== opt))
                   : onChange([...(value || []), opt])}
               type="button"
             >{opt}</button>
@@ -127,32 +180,26 @@ function QuestionCard({
 }
 
 // --- LandingPage Top Animation & Wizard ---
-const AnimatedLogoHeader = ({ stage, gradient, logoTop, logoShrink }) => (
-  <div
-    className="fixed left-1/2 z-40 select-none"
-    style={{
-      top: logoTop ? 32 : '50%',
-      transform: `translate(-50%, ${logoTop ? '0' : '-50%'}) scale(${logoShrink ? .89 : 1.15})`,
-      fontFamily: 'Special Elite, IBM Plex Mono, Consolas, Courier, monospace',
-      fontWeight: 700,
-      fontSize: 'clamp(2.9rem,7vw,5.4rem)',
-      lineHeight: '1.04',
-      background: gradient,
-      WebkitBackgroundClip: 'text',
-      backgroundClip: 'text',
-      color: 'transparent',
-      WebkitTextFillColor: 'transparent',
-      filter: 'drop-shadow(0 3px 38px #000b)',
-      textShadow: '0 1.5px 9px #0007',
-      letterSpacing: '0.018em',
-      opacity: 1,
-      transition: 'top .86s cubic-bezier(.64,.08,0,1), font-size .62s, transform .72s, color .62s',
-      pointerEvents: 'none',
-    }}
-  >
-    Book Recommender
-  </div>
-);
+const AnimatedLogoHeader = ({ stage, gradient, logoTop, logoShrink }) => {
+  return (
+    <div
+      className={`landing-logo-header${logoTop ? ' is-top' : ''}`}
+      style={{
+        background: gradient,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
+        WebkitTextFillColor: 'transparent',
+        filter: 'drop-shadow(0 3px 38px #000b)',
+        textShadow: '0 1.5px 9px #0007',
+        opacity: 1,
+        pointerEvents: 'none',
+      }}
+    >
+      <span className="landing-logo-header-text">Book Recommender</span>
+    </div>
+  );
+};
 
 // --- AnimatedBook: now only handles book opening, not blast
 type AnimatedBookProps = { isOpen: boolean; onOpenComplete: () => void; };
@@ -206,6 +253,32 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
   const [prevAnimDir, setPrevAnimDir] = useState<'left'|'right'>('right');
   const [showWizard, setShowWizard] = useState(false);
 
+  // --- Fetch authors from API ---
+  const [authors, setAuthors] = useState<string[]>([]);
+  const [authorsLoading, setAuthorsLoading] = useState(true);
+  useEffect(() => {
+    fetch('https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/authors')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setAuthors(data);
+        else if (Array.isArray(data.authors)) setAuthors(data.authors);
+        setAuthorsLoading(false);
+      })
+      .catch(() => setAuthorsLoading(false));
+  }, []);
+  const authorsFailed = !authorsLoading && authors.length === 0;
+
+  // Move questions array inside component to use dynamic authors
+  const GENRES = ["Fantasy", "Science Fiction", "Romance", "Mystery", "Nonfiction", "Horror", "Classic", "Dystopian"];
+  const questions = [
+    { key: "name", label: "What is your name?", type: "input" },
+    { key: "genres", label: "What genres do you like?", type: "multi", options: GENRES },
+    { key: "budget", label: "What is your budget?", type: "input", inputType: "number", prefix: "$" },
+    { key: "age", label: "What is your age?", type: "input", inputType: "number" },
+    { key: "author_preference", label: "Do you have preferences towards certain authors?", type: "yesno" },
+    { key: "authors", label: "Select your authors", type: "multi", options: authors, last: true },
+  ];
+
   // --- Blast overlay state
   const [showBlast, setShowBlast] = useState(false);
   const [blastOpacity, setBlastOpacity] = useState(1);
@@ -215,15 +288,18 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
   const bgGradient = useMemo(() => randomGradient(5), []);
   const logoBWGradient = useMemo(() => randomBWGradient(3), []);
 
+  // FADE STATE
+  const [fadeBg, setFadeBg] = useState(false); // for fade-in state
+  const altBgGradient = useMemo(() => randomGradient(4), []); // bg right before blast
+
   const openHandled = useRef(false);
   const progressTimer = useRef<any>();
 
   useEffect(() => {
     if (progressTimer.current) clearTimeout(progressTimer.current);
     if (stage === 'closed') {
-      // Show closed book briefly, then start opening
       progressTimer.current = setTimeout(() => setStage('opening'), 800);
-      openHandled.current = false; // can open
+      openHandled.current = false;
     } else if (stage === 'blast') {
       progressTimer.current = setTimeout(() => {
         setBlastDone(true);
@@ -236,12 +312,18 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     } else if (stage === 'fading') {
       progressTimer.current = setTimeout(() => { onComplete(answers); }, 720);
     }
+    if (stage === 'opening') {
+      setFadeBg(true);
+    }
+    if (stage === 'closed') setFadeBg(false);
+    if (stage === 'blast' || stage === 'logo' || stage === 'wizard' || stage === 'done' || stage === 'fading') {
+      setFadeBg(false);
+    }
     return () => {
       if (progressTimer.current) clearTimeout(progressTimer.current);
     };
   }, [stage, blastDone, answers, onComplete]);
 
-  // --- Blast overlay effect: show on blast, fade out after logo
   useEffect(() => {
     if (stage === 'blast') {
       setShowBlast(true);
@@ -250,7 +332,6 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     if (stage === 'logo' && showBlast) {
       setBlastOpacity(1);
       const fadeTimer = setTimeout(() => setBlastOpacity(0), 100);
-      // Remove from DOM after fade out
       const removeTimer = setTimeout(() => setShowBlast(false), 950);
       return () => {
         clearTimeout(fadeTimer);
@@ -259,7 +340,6 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     }
   }, [stage, showBlast]);
 
-  // Delay showing wizard after logo reaches top
   useEffect(() => {
     if (stage === 'wizard') {
       setShowWizard(false);
@@ -269,7 +349,6 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     if (stage !== 'wizard') setShowWizard(false);
   }, [stage]);
 
-  // Book open animation only triggers a transition ONCE
   const handleOpenComplete = () => {
     if (!openHandled.current && stage === 'opening') {
       openHandled.current = true;
@@ -277,17 +356,29 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     }
   };
 
+  function handleFinishFromNo() {
+    const qkey = 'author_preference';
+    const next = { ...answers, [qkey]: false };
+    setAnswers(next);
+    console.log('Onboarding completed. Answers:', next);
+    setPrevAnimDir('right');
+    setTimeout(() => setStage('done'), 400);
+  }
+
   function handleWizardNext(val) {
     const qkey = questions[questionIdx].key;
     const next = { ...answers, [qkey]: val };
     setAnswers(next);
 
-    // Only log once when FINISH (last step, authors) is clicked
     if (qkey === 'authors' && questionIdx === questions.length - 1) {
       console.log('Onboarding completed. Answers:', next);
     }
 
     setPrevAnimDir('right');
+    if (qkey === 'author_preference' && val === false) {
+      setTimeout(() => setStage('done'), 400);
+      return;
+    }
     if (questionIdx < questions.length - 1) {
       setTimeout(() => setQuestionIdx((idx) => idx + 1), 330);
     } else {
@@ -295,18 +386,40 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
     }
   }
   function handleWizardBack() {
+    if (questions[questionIdx].key === 'authors' && answers.author_preference === false) {
+      setPrevAnimDir('left');
+      setTimeout(() => setQuestionIdx((idx) => Math.max(0, idx - 2)), 260);
+      return;
+    }
     setPrevAnimDir('left');
     setTimeout(() => setQuestionIdx((idx) => Math.max(0, idx - 1)), 260);
   }
 
+  function shouldShowQuestion(i) {
+    const q = questions[i];
+    if (q.key === 'authors') {
+      return answers.author_preference === true;
+    }
+    return true;
+  }
+
+  function getDisplayQuestions() {
+    if (answers.author_preference === false) {
+      return questions.filter(q => q.key !== 'authors');
+    }
+    return questions;
+  }
+  const displayQuestions = getDisplayQuestions();
+  const displayQuestionIdx = Math.min(questionIdx, displayQuestions.length - 1);
+  const currentQ = displayQuestions[displayQuestionIdx];
+
   return (
-    <div className="fixed inset-0 flex flex-col justify-center items-center min-h-screen min-w-full transition-bg duration-1000 overflow-hidden" style={{ background: bgGradient }}>
-      {/* Entrance Animation: Book → Color Blast → (logo flies to top) */}
+    <div className="fixed inset-0 flex flex-col justify-center items-center min-h-screen min-w-full transition-bg duration-1000 overflow-hidden landing-main-bg" style={{ background: bgGradient }}>
+      <div className={`landing-bg-fade${fadeBg ? ' landing-bg-fade--show' : ''}`} style={{ background: altBgGradient }} />
       {(stage === 'closed' || stage === 'opening') && (
         <AnimatedBook isOpen={stage === 'opening'} onOpenComplete={handleOpenComplete} />
       )}
 
-      {/* Blast overlay: always appears on blast, fades out after logo */}
       {showBlast && (
         <div
           className="fixed inset-0 z-30 pointer-events-none"
@@ -320,7 +433,6 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
         />
       )}
 
-      {/* Animated Header + Transitioned logo */}
       {(stage === 'logo' || stage === 'wizard' || stage === 'done' || stage === 'fading') && (
         <AnimatedLogoHeader
           stage={stage}
@@ -330,53 +442,64 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
         />
       )}
 
-      {/* Q&A Wizard stepper, animations, gradients, retro font */}
       {stage === 'wizard' && showWizard && (
-        <>
-          {questionIdx > 0 && (
-            <button
-              className="fixed left-5 top-5 md:left-8 md:top-7 z-50 bg-black/65 border border-white/20 text-white/90 px-4 py-2 rounded-full shadow-2xl font-mono text-lg hover:bg-black/90 backdrop-blur-md transition-all"
-              onClick={handleWizardBack}
-              type="button"
-              aria-label="Go Back"
-              style={{fontFamily:"Special Elite, IBM Plex Mono, Courier, monospace"}}
-            >&#8592; Back</button>
-          )}
-          <div className="fixed inset-0 z-30 flex flex-col items-center justify-end md:justify-center bg-transparent px-2 pt-36 pb-8 md:pt-44 md:pb-24" style={{ pointerEvents: "auto" }}>
-            <div className="relative w-full mx-auto max-w-lg min-h-[60vh]">
-              {questions.map((q, i) => (
-                <div
-                  key={q.key}
-                  style={{
-                    position: i === questionIdx ? 'relative' : 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    zIndex: i === questionIdx ? 2 : 1,
-                    opacity: i === questionIdx ? 1 : 0,
-                    transform: i === questionIdx ? 'none' : prevAnimDir === 'right' ? 'translateX(38vw)' : 'translateX(-38vw)',
-                    pointerEvents: i === questionIdx ? 'auto' : 'none',
-                    transition: 'all 0.55s cubic-bezier(.73,.21,0,1.08)',
-                  }}>
-                  <QuestionCard
-                    q={q}
-                    value={answers[q.key] || (q.type === "multi" ? [] : "")}
-                    onChange={val => setAnswers(a => ({ ...a, [q.key]: val }))}
-                    onNext={() => handleWizardNext(answers[q.key])}
-                    autoFocus={i === questionIdx}
-                    gradient={wizardBWGradient}
-                    isLast={q.last}
-                    canFinish={q.key === 'authors' ? Array.isArray(answers[q.key]) && answers[q.key].length > 0 : undefined}
-                    onFinish={() => handleWizardNext(answers[q.key])}
-                  />
-                </div>
-              ))}
-            </div>
+        authorsLoading ? (
+          <div className="flex items-center justify-center h-32 text-lg text-white">Loading authors...</div>
+        ) : authorsFailed ? (
+          <div className="flex flex-col items-center justify-center h-32 text-lg text-red-200">
+            Failed to load the authors list.<br/>Please refresh or try again later.
           </div>
-        </>
+        ) : (
+          <>
+            {displayQuestionIdx > 0 && (
+              <button
+                className="fixed left-5 top-5 md:left-8 md:top-7 z-50 bg-black/65 border border-white/20 text-white/90 px-4 py-2 rounded-full shadow-2xl font-mono text-lg hover:bg-black/90 backdrop-blur-md transition-all"
+                onClick={handleWizardBack}
+                type="button"
+                aria-label="Go Back"
+                style={{fontFamily:"Special Elite, IBM Plex Mono, Courier, monospace"}}
+              >&#8592; Back</button>
+            )}
+            <div className="fixed inset-0 z-30 flex flex-col items-center justify-end md:justify-center bg-transparent px-2 pt-36 pb-8 md:pt-44 md:pb-24" style={{ pointerEvents: "auto" }}>
+              <div className="relative w-full mx-auto max-w-lg min-h-[60vh]">
+                {displayQuestions.map((q, i) => (
+                  <div
+                    key={q.key}
+                    style={{
+                      position: i === displayQuestionIdx ? 'relative' : 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      zIndex: i === displayQuestionIdx ? 2 : 1,
+                      opacity: i === displayQuestionIdx ? 1 : 0,
+                      transform: i === displayQuestionIdx ? 'none' : prevAnimDir === 'right' ? 'translateX(38vw)' : 'translateX(-38vw)',
+                      pointerEvents: i === displayQuestionIdx ? 'auto' : 'none',
+                      transition: 'all 0.55s cubic-bezier(.73,.21,0,1.08)',
+                    }}>
+                    <QuestionCard
+                      q={q}
+                      value={answers[q.key] || (q.type === "multi" ? [] : "")}
+                      options={q.options || []}
+                      onChange={val => setAnswers(a => ({ ...a, [q.key]: val }))}
+                      onNext={() => handleWizardNext(answers[q.key])}
+                      autoFocus={i === displayQuestionIdx}
+                      gradient={wizardBWGradient}
+                      isLast={q.last && (answers.author_preference !== false)}
+                      canFinish={q.key === 'authors'
+                        ? Array.isArray(answers[q.key]) && answers[q.key].length > 0
+                        : undefined}
+                      onFinish={() => handleWizardNext(answers[q.key])}
+                      answers={answers}
+                      handleFinishFromNo={handleFinishFromNo}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )
       )}
 
-      {/* Final transition: Move to main app/homepage (integrate or show answers as desired) */}
       {(stage === 'done' || stage === 'fading') && (
         <div className={`fixed inset-0 flex flex-col items-center justify-center text-center z-30 bg-black/70 ${stage==='fading' ? 'opacity-0 transition-opacity duration-700' : 'opacity-100 transition-opacity duration-800'}`}>
           <h2 className="text-3xl md:text-4xl mb-6" style={{ fontFamily: 'Special Elite, IBM Plex Mono, Courier, monospace', background: wizardBWGradient, WebkitBackgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>Welcome, {answers.name}!</h2>

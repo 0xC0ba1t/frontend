@@ -19,7 +19,7 @@ export default function DumpDb() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/dump-db?password=")
+    fetch("https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/dump-db?password=sudo")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();

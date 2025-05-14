@@ -119,7 +119,6 @@ export function BookCard({ book, index }: { book: Book, index: number }) {
         {/* Cursor-following glow effect */}
         {isHovered && (
           <>
-            {/* Outer glow */}
             <div
               ref={glowRef}
               className="absolute pointer-events-none z-10 rounded-full"
@@ -135,7 +134,6 @@ export function BookCard({ book, index }: { book: Book, index: number }) {
                 willChange: 'left, top'
               }}
             />
-            {/* Bright center */}
             <div
               ref={centerGlowRef}
               className="absolute pointer-events-none z-10 rounded-full"
@@ -153,26 +151,13 @@ export function BookCard({ book, index }: { book: Book, index: number }) {
             />
           </>
         )}
-
-        {/* Book content with improved truncation for long titles */}
-        <div className="flex flex-col h-full gap-4">
+        {/* Book content - no image, just text! */}
+        <div className="flex flex-col h-full gap-4 justify-between">
           <div className="flex flex-row gap-3 items-start">
-            <div className="flex-none h-20 w-16 bg-muted rounded-lg overflow-hidden border border-white/10">
-              <img
-                src={book.coverUrl || "https://same-assets.com/placeholder/book-dark.svg"}
-                alt={book.title}
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  img.src = "https://same-assets.com/placeholder/book-dark.svg";
-                }}
-              />
-            </div>
             <div className="flex-1 min-w-0 overflow-hidden">
-              {/* The h2 with title now has better truncation + responsive font size */}
               <h2
                 className="font-medium text-base md:text-lg mb-1 leading-tight truncate"
-                title={book.title} // add tooltip on hover
+                title={book.title}
               >
                 {book.title}
               </h2>
@@ -180,7 +165,6 @@ export function BookCard({ book, index }: { book: Book, index: number }) {
               <p className="text-xs uppercase tracking-wider opacity-70">{book.genre}</p>
             </div>
           </div>
-
           {/* Tags - with flex-wrap for landscape */}
           <div className="flex flex-wrap gap-2 mt-auto">
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/10">
