@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import './LandingPage.css'; // NEW: will create this file for bg fade effect
+import "@/components/LandingPage.css";
 
 function randomColor() {
   const h = Math.floor(Math.random() * 360);
@@ -256,8 +256,15 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
   // --- Fetch authors from API ---
   const [authors, setAuthors] = useState<string[]>([]);
   const [authorsLoading, setAuthorsLoading] = useState(true);
+
+  const API_PASSWORD = import.meta.env.VITE_API_PASSWORD;
+
   useEffect(() => {
-    fetch('https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/authors')
+    fetch('https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/authors', {
+      headers: {
+        'Authorization': `Bearer ${API_PASSWORD}`
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAuthors(data);
@@ -414,7 +421,7 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
   const currentQ = displayQuestions[displayQuestionIdx];
 
   return (
-    <div className="fixed inset-0 flex flex-col justify-center items-center min-h-screen min-w-full transition-bg duration-1000 overflow-hidden landing-main-bg" style={{ background: bgGradient }}>
+    <div className="fixed inset-0 flex flex-col justify-center items-center min-h-screen min-w-full transition-bg duration-1000 overflow-hidden landing-main-bg text-black dark:text-black" style={{ background: bgGradient }}>
       <div className={`landing-bg-fade${fadeBg ? ' landing-bg-fade--show' : ''}`} style={{ background: altBgGradient }} />
       {(stage === 'closed' || stage === 'opening') && (
         <AnimatedBook isOpen={stage === 'opening'} onOpenComplete={handleOpenComplete} />
@@ -444,9 +451,9 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
 
       {stage === 'wizard' && showWizard && (
         authorsLoading ? (
-          <div className="flex items-center justify-center h-32 text-lg text-white">Loading authors...</div>
+          <div className="flex items-center justify-center h-32 text-lg text-black dark:text-black">Loading authors...</div>
         ) : authorsFailed ? (
-          <div className="flex flex-col items-center justify-center h-32 text-lg text-red-200">
+          <div className="flex flex-col items-center justify-center h-32 text-lg text-black dark:text-black">
             Failed to load the authors list.<br/>Please refresh or try again later.
           </div>
         ) : (
@@ -501,9 +508,9 @@ export const LandingPage: React.FC<{ onComplete: (answers: any) => void }> = ({ 
       )}
 
       {(stage === 'done' || stage === 'fading') && (
-        <div className={`fixed inset-0 flex flex-col items-center justify-center text-center z-30 bg-black/70 ${stage==='fading' ? 'opacity-0 transition-opacity duration-700' : 'opacity-100 transition-opacity duration-800'}`}>
+        <div className={`fixed inset-0 flex flex-col items-center justify-center text-center z-30 bg-black/70 ${stage==='fading' ? 'opacity-0 transition-opacity duration-700' : 'opacity-100 transition-opacity duration-800'} text-black dark:text-black`}>
           <h2 className="text-3xl md:text-4xl mb-6" style={{ fontFamily: 'Special Elite, IBM Plex Mono, Courier, monospace', background: wizardBWGradient, WebkitBackgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>Welcome, {answers.name}!</h2>
-          <div className="text-xl text-white/90 font-mono mb-4">Your preferences have been saved.<br/>Loading your recommendations...</div>
+          <div className="text-xl font-mono mb-4">Your preferences have been saved.<br/>Loading your recommendations...</div>
         </div>
       )}
     </div>

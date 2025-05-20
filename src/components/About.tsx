@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const AUDIO_SRC = "https://c0ba1t.is-a.dev/projects/book-project-cs/assets/335711__dnlburnett__ambience-busy-office-call-center.wav";
+const AUDIO_SRC = "/uploads/335711__dnlburnett__ambience-busy-office-call-center.wav";
 
 function BouncingPhone() {
   // Phone size (px), v = vector, p = position, d = direction

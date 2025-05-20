@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BookCard } from "@/components/BookCard";
 import CloudGlow from "@/CloudGlow";
 
+const API_PASSWORD = import.meta.env.VITE_API_PASSWORD;
+
 interface Book {
   id: number;
   title: string;
@@ -27,7 +29,10 @@ export default function Home({ answers, userId }: HomeProps) {
     setLoading(true);
     setError(null);
     fetch(
-      `https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/recommend-books?user_id=${userId}`
+      `https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/recommend-books?user_id=${userId}`,
+      {
+        headers: { 'Authorization': `Bearer ${API_PASSWORD}` },
+      }
     )
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch books");
@@ -69,6 +74,16 @@ export default function Home({ answers, userId }: HomeProps) {
         )}
         <p className="text-muted-foreground md:text-lg">
           Discover your next favorite book.
+        </p>
+        <p className="mt-5 text-sm text-zinc-800 dark:text-zinc-200 font-mono">
+          Do you want to search for books manually instead?{' '}
+          <a
+            href="/search"
+            className="text-blue-600 underline hover:text-blue-900 dark:text-cyan-300 dark:hover:text-cyan-200 ml-0.5"
+            style={{ textDecorationThickness: '2px' }}
+          >
+            Click here
+          </a>
         </p>
       </header>
       <main className="w-full max-w-5xl flex-1 flex flex-col items-center" style={{ background: "transparent" }}>

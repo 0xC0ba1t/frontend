@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { BookCard } from "@/components/BookCard";
 
+const API_PASSWORD = import.meta.env.VITE_API_PASSWORD;
+
 interface Book {
   id: number;
   title: string;
@@ -8,24 +10,26 @@ interface Book {
   cost: number;
   genre: string;
   age_rating: string;
-  coverUrl?: string;
   description?: string;
 }
 
-export default function DumpDb() {
+function DumpDb() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetch("https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/dump-db?password=sudo")
+    fetch("https://8000-01jtrkrgvb5brn7hg3gkn1gyv1.cloudspaces.litng.ai/dump-db?password=sudo", {
+      headers: { Authorization: `Bearer ${API_PASSWORD}` },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();
       })
       .then((data) => {
         if (Array.isArray(data.books)) setBooks(data.books);
+        else if (Array.isArray(data)) setBooks(data);
         else throw new Error("Invalid response");
       })
       .catch((e) => setError(e.message))
@@ -42,7 +46,6 @@ export default function DumpDb() {
           Loading...
         </div>
       )}
-
       {error && (
         <div className="text-destructive py-6 text-center">
           {error}
@@ -60,9 +63,12 @@ export default function DumpDb() {
           </div>
         )}
       </div>
+
       <footer className="opacity-70 text-xs py-4 w-full text-center mt-auto">
         &copy; {new Date().getFullYear()} Call Center Group 4
       </footer>
     </div>
   );
 }
+
+export default DumpDb;
